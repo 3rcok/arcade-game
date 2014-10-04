@@ -1,4 +1,5 @@
 var Engine = (function(global) {
+  'use strict';
     var doc = global.document,
         win = global.window,
         canvas = doc.createElement('canvas'),
@@ -19,7 +20,7 @@ var Engine = (function(global) {
 
         lastTime = now;
         win.requestAnimationFrame(main);
-    };
+    }
 
     function init() {
 
