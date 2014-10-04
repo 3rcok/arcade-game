@@ -9,14 +9,14 @@
     w: 101,
     h: 83
   };
+  var canvasSize = {
+    top: 0,
+    left: 0,
+    right: 505,
+    bottom: (6 * entitySize.h) - 15
+  };
 
   function handleMovementBoundaries(moveTo, currPos) {
-    var canvasSize = {
-      top: 0,
-      left: 0,
-      right: 505,
-      bottom: (6 * entitySize.h) - 15
-    };
     switch (moveTo) {
       case 'left':
         console.log('move left');
@@ -40,15 +40,19 @@
 
   }
 
+  function generateRandomPosition() {
+    return {
+      x: randomIntFromInterval(0, 4) * entitySize.w,  //canvas w 505
+      y: (randomIntFromInterval(1, 5) * entitySize.h) - 15  //canvas h 606
+    };
+  }
+
 // Enemies our player must avoid
   var Enemy = (function () {
 
     function Enemy(startPosition) {
       if (Object.prototype.toString.call(startPosition) !== '[object Object]') {
-        startPosition = {
-          x: randomIntFromInterval(0, 4) * entitySize.w,  //canvas w 505
-          y: (randomIntFromInterval(1, 5) * entitySize.h) - 15  //canvas h 606
-        };
+        startPosition = generateRandomPosition();
       }
       // Variables applied to each of our instances go here,
       // we've provided one for you to get started
@@ -66,8 +70,15 @@
       // You should multiply any movement by the dt parameter
       // which will ensure the game runs at the same speed for
       // all computers.
-      //this.x = this.x*dt + this.x;
-      //this.y = this.y*dt + this.y;
+      //var newPosition = generateRandomPosition();
+      //this.x = newPosition.x + (newPosition.x*dt);
+      //this.y = newPosition.y;
+      if (this.x + entitySize.w > canvasSize.right + entitySize.w) {
+        this.x = -entitySize.w;
+        this.y = generateRandomPosition().y;
+        return;
+      }
+      this.x = this.x + (entitySize.w * dt);
     };
 
 // Draw the enemy on the screen, required method for game
@@ -100,17 +111,30 @@
       // The image/sprite for our player, this uses
       // a helper we've provided to easily load images
       this.sprite = Resources.get(charImg[gender || 'M']);
+
+      this.moved = false;
+      this.newPosition = {x: this.x, y: this.y};
     }
 
     // inheritance
     Player.prototype = Object.create(_super.prototype);
     Player.prototype.constructor = Player;
 
+    Player.prototype.update = function () {
+      /*if (this.moved) {
+        this.x = this.x + (this.newPosition.x * dt);
+        this.y = this.y + (this.newPosition.y * dt);
+        this.moved = false;
+      }*/
+    };
+
     Player.prototype.handleInput = function (moveTo) {
       var currPos = {x: this.x, y: this.y};
       handleMovementBoundaries(moveTo, currPos);
       this.x = currPos.x;
       this.y = currPos.y;
+      this.moved = true;
+      this.newPosition = currPos;
       /*      switch (moveTo) {
        case 'left':
        console.log('move left');
@@ -163,8 +187,13 @@
     ];
 // Place the player object in a variable called player
     global.player = new Player('M');
-  }
 
-  Resources.onReady(init);
+
+  }
+  global.resetGame = function(){
+    init();
+  };
+
+  //Resources.onReady(init);
 
 })(this);

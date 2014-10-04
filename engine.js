@@ -5,21 +5,27 @@ var Engine = (function (global) {
     canvas = doc.createElement('canvas'),
     ctx = canvas.getContext('2d'),
     patterns = {},
-    lastTime;
+    lastTime,
+    rAfId,
+    collisionOccurred = false;
 
   canvas.width = 505;
   canvas.height = 606;
   doc.body.appendChild(canvas);
 
   function main() {
+
     var now = Date.now(),
       dt = (now - lastTime) / 1000.0;
-
     update(dt);
+    if (collisionOccurred) {
+      win.cancelAnimationFrame(rAfId);
+      return;
+    }
     render();
 
     lastTime = now;
-    win.requestAnimationFrame(main);
+    rAfId = win.requestAnimationFrame(main);
   }
 
   function init() {
@@ -31,7 +37,23 @@ var Engine = (function (global) {
 
   function update(dt) {
     updateEntities(dt);
-    // checkCollisions();
+    if (checkCollisions()) {
+      collisionOccurred = true;
+      if (win.confirm('Collision occurred! do you wanna start again?')) {
+        reset();
+        collisionOccurred = false;
+      }
+    }
+  }
+
+  function checkCollisions() {
+    return allEnemies.some(function (enemy) {
+      if (Math.floor(enemy.x) + 81 >= player.x && Math.floor(enemy.x) <= player.x + 81 && enemy.y === player.y) {
+
+
+        return true;
+      }
+    });
   }
 
   function updateEntities(dt) {
@@ -72,6 +94,9 @@ var Engine = (function (global) {
 
   function reset() {
     // noop
+    global.resetGame();
+
+
   }
 
   Resources.load([
